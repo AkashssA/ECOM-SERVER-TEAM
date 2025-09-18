@@ -1,4 +1,4 @@
-package com.mid.ecom_server.exceptions;
+package com.mtd.ecom_server.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

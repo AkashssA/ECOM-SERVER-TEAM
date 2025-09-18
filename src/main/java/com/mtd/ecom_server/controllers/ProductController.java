@@ -1,4 +1,4 @@
-package com.mid.ecom_server.controllers;
+package com.mtd.ecom_server.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mid.ecom_server.exceptions.ResourceNotFoundException;
-import com.mid.ecom_server.models.Product;
-import com.mid.ecom_server.repos.ProductRepo;
+import com.mtd.ecom_server.exceptions.ResourceNotFoundException;
+import com.mtd.ecom_server.models.Product;
+import com.mtd.ecom_server.repos.ProductRepo;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 

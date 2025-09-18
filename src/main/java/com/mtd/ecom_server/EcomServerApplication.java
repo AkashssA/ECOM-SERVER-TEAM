@@ -1,4 +1,4 @@
-package com.mid.ecom_server;
+package com.mtd.ecom_server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
