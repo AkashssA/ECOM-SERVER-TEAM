@@ -41,7 +41,7 @@ public class ProductController {
     @PostMapping("/add")
     public Product addProduct(@RequestBody Product newproduct) {
     	Log.info("Adding product"+newproduct);
-        // tags are saved as comma-separated string
+        
         return productRepo.save(newproduct);
     }
 
@@ -68,7 +68,7 @@ public class ProductController {
         findproduct.setName(newproduct.getName());
         findproduct.setDescription(newproduct.getDescription());
         findproduct.setCategory(newproduct.getCategory());
-        findproduct.setTags(newproduct.getTags()); // comma-separated string
+        findproduct.setTags(newproduct.getTags()); 
         findproduct.setPrice(newproduct.getPrice());
         findproduct.setStock(newproduct.getStock());
     	Log.info("updating product"+findproduct);
