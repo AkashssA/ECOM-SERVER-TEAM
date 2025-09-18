@@ -40,7 +40,7 @@ public class OrderController {
 
         double total = 0.0;
 
-        /
+        
         for (Map.Entry<String, Integer> entry : newOrder.getProducts().entrySet()) {
             String productId = entry.getKey();
             Integer quantity = entry.getValue();
