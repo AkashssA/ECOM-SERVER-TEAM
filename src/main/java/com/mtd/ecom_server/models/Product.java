@@ -3,7 +3,7 @@ package com.mtd.ecom_server.models;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection="Product")
+@Document (collection = "products")
 public class Product {
 	@Id
 	private String id;
@@ -13,6 +13,8 @@ public class Product {
 	private String tags;
 	private float price;
 	private int stock;
+	
+
 	public String getId() {
 		return id;
 	}
@@ -56,6 +58,4 @@ public class Product {
 		this.stock = stock;
 	}
 	
-	
-
 }

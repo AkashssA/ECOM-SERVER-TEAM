@@ -36,23 +36,25 @@ public class UserController {
 	private final static Logger log = LoggerFactory.getLogger(UserController.class);
 
 	 static class SignupResponse {
+
+	        private String name;
 	        private String uid;
 	        private String email;
 	        private String role;
-	        private String name;
-	        public SignupResponse(String uid, String email, String role, String name) {
+	        public SignupResponse(String name,String uid, String email, String role) {
+	            this.name=name;
 	            this.uid = uid;
 	            this.email = email;
 	            this.role = role;
-	            this.name=name;
+
 	        }
 
+	        public String getName() { return name; }
 	        public String getUid() { return uid; }
 	        public String getEmail() { return email; }
 	        public String getRole() { return role; }
-	        public String getName() { return name; }
 	 }
-	   
+	@Tag(name = "Signup (Static)") 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody User newUser) {
         log.info("Attempting signup for email: {}", newUser.getEmail());
@@ -74,7 +76,7 @@ public class UserController {
                 .status(HttpStatus.CREATED)
                 .body(new SignupResponse(savedUser.getName(),savedUser.getId(), savedUser.getEmail(), savedUser.getRoles().toString()));
     }
-    
+	@Tag(name = "Login (Static)")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User loginRequest) {
         log.info("Login attempt for email: {}", loginRequest.getEmail());

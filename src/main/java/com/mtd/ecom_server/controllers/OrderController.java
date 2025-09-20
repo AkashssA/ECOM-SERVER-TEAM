@@ -1,77 +1,116 @@
 package com.mtd.ecom_server.controllers;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.mtd.ecom_server.enums.OrderStatus;
 import com.mtd.ecom_server.exceptions.ResourceNotFoundException;
 import com.mtd.ecom_server.models.Order;
 import com.mtd.ecom_server.models.Product;
 import com.mtd.ecom_server.repos.OrderRepo;
 import com.mtd.ecom_server.repos.ProductRepo;
-import com.mtd.ecom_server.repos.UserRepo;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
-    private static final Logger Log = LoggerFactory.getLogger(OrderController.class);
 
-    @Autowired
-    private OrderRepo orderRepo;
+    @Autowired OrderRepo orderRepo;
+    @Autowired ProductRepo productRepo;
 
-    @Autowired
-    private ProductRepo productRepo;
-    
-    @Autowired
-    private UserRepo userRepo;
+    private final static Logger log = LoggerFactory.getLogger(OrderController.class);
 
-    
-    @PostMapping("/create")
-    public Order createOrder(@RequestBody Order newOrder) {
-        Log.info("Attempting to create a new order for user: " + newOrder.getUserId());
-
-       
-        userRepo.findById(newOrder.getUserId())
-            .orElseThrow(() -> new ResourceNotFoundException("User not found, cannot create order."));
-
+    @Tag(name = "Place Order")
+    @PostMapping("/{userId}/place")
+    public Order placeOrder(@PathVariable String userId, @RequestBody Map<String, Integer> products) {
+        log.info("Placing order for userId: {}", userId);
         double total = 0.0;
 
-        
-        for (Map.Entry<String, Integer> entry : newOrder.getProducts().entrySet()) {
+        for (Map.Entry<String, Integer> entry : products.entrySet()) {
             String productId = entry.getKey();
-            Integer quantity = entry.getValue();
+            int quantity = entry.getValue();
 
-            
-            Product product = productRepo.findById(productId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
-            
-            
+            Product product = productRepo.findById(productId).orElseThrow(() -> {
+                log.error("Product Not Found: {}", productId);
+                return new ResourceNotFoundException("Product Not Found");
+            });
+
+            if (product.getStock() < quantity) {
+                log.error("Insufficient stock for product: {}", product.getName());
+                throw new ResourceNotFoundException("Insufficient stock for product: " + product.getName());
+            }
+
+            product.setStock(product.getStock() - quantity);
+            productRepo.save(product);
+
             total += product.getPrice() * quantity;
         }
 
-        newOrder.setTotalAmount(total);
-        newOrder.setStatus(OrderStatus.PENDING); 
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setProducts(products);
+        order.setTotalAmount(total);
+        order.setStatus(OrderStatus.PENDING); 
 
-        Log.info("Order created successfully with total amount: " + total);
-        return orderRepo.save(newOrder);
+        return orderRepo.save(order);
     }
 
-    
+    @Tag(name = "Update Order Status")
+    @PutMapping("/{orderId}/status")
+    public Order updateOrderStatus(@PathVariable String orderId, @RequestParam OrderStatus status) {
+        log.info("Updating order status. OrderId: {}, Status: {}", orderId, status);
+
+        Order order = orderRepo.findById(orderId).orElseThrow(() -> {
+            log.error("Order Not Found with ID: {}", orderId);
+            return new ResourceNotFoundException("Order Not Found");
+        });
+
+        order.setStatus(status);
+        return orderRepo.save(order);
+    }
+
+    @Tag(name = "Get All Orders")
+    @GetMapping("/all")
+    public List<Order> getAllOrders() {
+        log.info("Fetching all orders");
+        return orderRepo.findAll();
+    }
+
+    @Tag(name = "Get Order by ID")
+    @GetMapping("/{id}")
+    public Order getOrderById(@PathVariable String id) {
+        log.info("Fetching order with ID: {}", id);
+        Optional<Order> findOrder = orderRepo.findById(id);
+        if (findOrder.isEmpty()) {
+            log.error("Order Not Found with ID: {}", id);
+            throw new ResourceNotFoundException("Order Not Found");
+        }
+        return findOrder.get();
+    }
+
+    @Tag(name = "Get Orders by User")
     @GetMapping("/user/{userId}")
-    public List<Order> getOrdersByUserId(@PathVariable String userId) {
-        Log.info("Fetching all orders for user: " + userId);
+    public List<Order> getOrdersByUser(@PathVariable String userId) {
+        log.info("Fetching orders for user: {}", userId);
         return orderRepo.findByUserId(userId);
     }
-    
-    
-    @GetMapping("/{orderId}")
-    public Order getOrderById(@PathVariable String orderId) {
-        Log.info("Fetching order details for order: " + orderId);
-        return orderRepo.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+    @Tag(name = "Delete Order")
+    @DeleteMapping("/delete/{id}")
+    public String deleteOrder(@PathVariable String id) {
+        Optional<Order> findOrder = orderRepo.findById(id);
+        if (findOrder.isEmpty()) {
+            log.error("Order Not Found with ID: {}", id);
+            throw new ResourceNotFoundException("Order Not Found");
+        }
+        orderRepo.deleteById(id);
+        return "Order Deleted";
     }
 }
